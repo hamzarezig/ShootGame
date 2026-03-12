@@ -89,25 +89,31 @@ class Bullet{
     constructor(x,y,targetx,targety){
         this.x = x;
         this.y = y;
+        this.length = 4
+        //get direction
         let angle = Math.atan2(targetx - this.x,targety - this.y)
         this.velocity = {
             x : 10 * Math.sin(angle),
             y : 10 * Math.cos(angle),
         } 
-        console.log(this.velocity)
     }
 
     update(){
         this.x += this.velocity.x
         this.y += this.velocity.y
         
+        for(let i=0;i<game.enemies.length;i++){
+            if(isColliding(this,game.enemies[i])) {
+                game.enemies.splice(i,1)
+            }
+        }
     }
     draw(){
         ctx.beginPath()
         ctx.fillStyle = "#ff9904"
         // ctx.fillRect(this.x, this.y, 5, 5)
         ctx.strokeStyle = "#ff9904"
-        ctx.arc(this.x, this.y, 4, 0,Math.PI * 2 , false )
+        ctx.arc(this.x, this.y, this.length, 0,Math.PI * 2 , false )
         ctx.fill()
         ctx.closePath()
     }
@@ -197,7 +203,14 @@ class Enemy {
     }
 }
 
+// functions 
+function isColliding(obj1,obj2){
+    return  obj1.x < obj2.x + obj2.length &&
+            obj1.x + obj1.length > obj2.x &&
+            obj1.y < obj2.y + obj2.length &&
+            obj1.y + obj1.length > obj2.y ;
 
+}
 
 function initGame() {
 
