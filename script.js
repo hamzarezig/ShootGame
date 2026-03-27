@@ -41,6 +41,7 @@ class Player {
         }
     }
     update() {
+        // check for wall collisions
         this.velocity.x = 0;
         this.velocity.y = 0;
         if (this.direction.up && !this.blockedDirections.up) { // race condition fix 
@@ -125,8 +126,10 @@ class Wall {
         this.y = y;
         this.length = length;
     }
-    detectCollisions(object) {
+    detectCollisions(objects) {
         // detect for collisions 
+        for(const object of objects){
+
         if (this.x < object.x + object.length &&
             this.x + this.length > object.x &&
             this.y < object.y + object.length &&
@@ -163,6 +166,7 @@ class Wall {
 
 
         }
+        }
 
     }
     draw() {
@@ -184,6 +188,12 @@ class Enemy {
             y: 0
         }
         this.speed = (speed / 2) * Math.random()+1;
+        this.blockedDirections = {
+            up: false,
+            down: false,
+            right: false,
+            left: false
+        }
     }
     update(){
         // TODO add distance calulation with pythagor
@@ -192,8 +202,21 @@ class Enemy {
         this.velocity.x = this.speed * Math.sin(angle)
         this.velocity.y = this.speed * Math.cos(angle)
 
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        if(
+            (this.velocity.x > 0 && !this.blockedDirections.right) || 
+            (this.velocity.x < 0 && !this.blockedDirections.left)
+        ) this.x += this.velocity.x;
+        if(
+            (this.velocity.y > 0 && !this.blockedDirections.down) || 
+            (this.velocity.y < 0 && !this.blockedDirections.left)
+        ) this.y += this.velocity.y;
+
+        this.blockedDirections = {
+            up: false,
+            down: false,
+            right: false,
+            left: false
+        }
 
     }
     draw(){
@@ -289,17 +312,21 @@ function animate() {
     ctx.clearRect(0, 0, innerWidth, innerHeight);
 
     game.player.update();
+    for(let i=0;i<game.enemies.length;i++){
+        game.enemies[i].update()
+    }
 
     //render the walls and calculate collisions
     for (let i = 0; i < game.walls.length; i++) {
-        game.walls[i].detectCollisions(game.player)
+        //game.walls[i].detectCollisions(game.player)
+        game.walls[i].detectCollisions(game.enemies)
+        game.walls[i].detectCollisions([game.player])
         game.walls[i].draw()
     }
 
     game.player.draw();
 
     for(let i=0;i<game.enemies.length;i++){
-        game.enemies[i].update()
         game.enemies[i].draw()
     }
 
